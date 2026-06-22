@@ -17,6 +17,33 @@ const SIMPLE_SCHEMA = JSON.stringify({
   ],
 });
 
+const SCHEMA_WITH_FILE = JSON.stringify({
+  version: '1.0',
+  elements: [
+    { type: 'input', kind: 'file', id: 'photo', label: 'Profile Photo', accept: 'image/*' },
+    { type: 'submit', id: 'sub', label: 'Submit', route: '/api' },
+  ],
+});
+
+const SCHEMA_WITH_SIGNATURE = JSON.stringify({
+  version: '1.0',
+  elements: [
+    { type: 'signature', id: 'sig', label: 'Sign Here' },
+    { type: 'submit', id: 'sub', label: 'Submit', route: '/api' },
+  ],
+});
+
+const SCHEMA_WITH_REPEAT = JSON.stringify({
+  version: '1.0',
+  elements: [
+    {
+      type: 'repeat', id: 'contacts', label: 'Contacts',
+      template: [{ type: 'input', kind: 'text', id: 'name', label: 'Name' }],
+    },
+    { type: 'submit', id: 'sub', label: 'Submit', route: '/api' },
+  ],
+});
+
 const INVALID_JSON = '{ not valid json }';
 
 const SCHEMA_WITH_ERRORS = JSON.stringify({
@@ -107,7 +134,6 @@ describe('RenderlyFormElement — schema property', () => {
   it('clears rendered content when schema attribute is removed', () => {
     el = mount({ schema: SIMPLE_SCHEMA });
     el.removeAttribute('schema');
-    // Container div stays in the DOM but its content is wiped
     expect(el.querySelector('form')).toBeNull();
     expect(el.querySelector('h1')).toBeNull();
   });
@@ -120,9 +146,6 @@ describe('RenderlyFormElement — values', () => {
   afterEach(() => unmount(el));
 
   it('re-renders when values are updated', () => {
-    // IRInputTextNode does not carry a value field through the IR, so
-    // text input pre-fill is not supported yet. Choice inputs (radio/checkbox)
-    // do carry value and update the checked attribute — verified separately.
     const before = el.innerHTML;
     el.values = { role: 'admin' };
     expect(el.innerHTML).not.toBe(before);
@@ -220,5 +243,89 @@ describe('RenderlyFormElement — renderly-error event', () => {
       });
       el.setAttribute('schema', INVALID_JSON);
     });
+  });
+});
+
+describe('RenderlyFormElement — file input', () => {
+  let el: RenderlyFormElement;
+
+  beforeEach(() => { el = mount({ schema: SCHEMA_WITH_FILE }); });
+  afterEach(() => unmount(el));
+
+  it('renders a file input element', () => {
+    expect(el.querySelector('input[type="file"]')).not.toBeNull();
+  });
+
+  it('file input has the correct name', () => {
+    const input = el.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(input?.name).toBe('photo');
+  });
+
+  it('file input has the accept attribute', () => {
+    const input = el.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(input?.accept).toBe('image/*');
+  });
+
+  it('wraps file input in a form', () => {
+    expect(el.querySelector('form')).not.toBeNull();
+  });
+});
+
+describe('RenderlyFormElement — signature field', () => {
+  let el: RenderlyFormElement;
+
+  beforeEach(() => { el = mount({ schema: SCHEMA_WITH_SIGNATURE }); });
+  afterEach(() => unmount(el));
+
+  it('renders a signature pad element', () => {
+    expect(el.querySelector('[data-target="sig"]')).not.toBeNull();
+  });
+
+  it('signature pad has the renderly-signature__pad class', () => {
+    const pad = el.querySelector('.renderly-signature__pad');
+    expect(pad).not.toBeNull();
+  });
+
+  it('signature pad has role="img"', () => {
+    const pad = el.querySelector('[role="img"]');
+    expect(pad).not.toBeNull();
+  });
+});
+
+describe('RenderlyFormElement — repeat field', () => {
+  let el: RenderlyFormElement;
+
+  beforeEach(() => { el = mount({ schema: SCHEMA_WITH_REPEAT }); });
+  afterEach(() => unmount(el));
+
+  it('renders a repeat fieldset', () => {
+    expect(el.querySelector('fieldset')).not.toBeNull();
+  });
+
+  it('renders an add button with data-action="repeat-add"', () => {
+    const btn = el.querySelector('[data-action="repeat-add"]');
+    expect(btn).not.toBeNull();
+  });
+
+  it('add button targets the correct repeat id', () => {
+    const btn = el.querySelector('[data-action="repeat-add"]') as HTMLElement;
+    expect(btn?.dataset['target']).toBe('contacts');
+  });
+
+  it('clicking the add button increases the rendered item count', () => {
+    const before = el.querySelectorAll('[data-action="repeat-remove"]').length;
+    const addBtn = el.querySelector('[data-action="repeat-add"]') as HTMLElement;
+    addBtn.click();
+    const after = el.querySelectorAll('[data-action="repeat-remove"]').length;
+    expect(after).toBeGreaterThan(before);
+  });
+
+  it('clicking remove decreases the rendered item count', () => {
+    (el.querySelector('[data-action="repeat-add"]') as HTMLElement).click();
+    const before = el.querySelectorAll('[data-action="repeat-remove"]').length;
+    expect(before).toBeGreaterThan(0);
+    (el.querySelector('[data-action="repeat-remove"]') as HTMLElement).click();
+    const after = el.querySelectorAll('[data-action="repeat-remove"]').length;
+    expect(after).toBeLessThan(before);
   });
 });

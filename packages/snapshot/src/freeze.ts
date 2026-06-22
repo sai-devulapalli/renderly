@@ -5,8 +5,12 @@ import type {
   IRInputNumberNode,
   IRInputDateNode,
   IRInputChoiceNode,
+  IRInputFileNode,
+  IRSignatureNode,
+  IRRepeatNode,
   IRContainerNode,
 } from '@renderly/schema';
+import type { FieldValues } from '@renderly/schema';
 import type { SnapshotOptions } from './types.js';
 
 function formatValue(
@@ -61,6 +65,38 @@ function freezeInputDate(node: IRInputDateNode, opts: SnapshotOptions): IRNode |
     type: 'text',
     id: node.id,
     content: `${node.label}: ${formatValue(raw, placeholder)}`,
+    weight: 'normal',
+    intent: 'default',
+    children: [],
+  };
+  return textNode;
+}
+
+function freezeInputFile(node: IRInputFileNode, opts: SnapshotOptions): IRNode | null {
+  const raw = opts.values[node.id];
+  const empty = (raw === undefined || raw === '');
+  if (empty && opts.omitEmpty && !node.required) return null;
+  const placeholder = opts.emptyPlaceholder ?? '—';
+  const textNode: IRTextNode = {
+    type: 'text',
+    id: node.id,
+    content: `${node.label}: ${formatValue(raw, placeholder)}`,
+    weight: 'normal',
+    intent: 'default',
+    children: [],
+  };
+  return textNode;
+}
+
+function freezeSignature(node: IRSignatureNode, opts: SnapshotOptions): IRNode | null {
+  const raw = opts.values[node.id];
+  const signed = raw !== undefined && raw !== '';
+  if (!signed && opts.omitEmpty && !node.required) return null;
+  const placeholder = opts.emptyPlaceholder ?? '—';
+  const textNode: IRTextNode = {
+    type: 'text',
+    id: node.id,
+    content: `${node.label}: ${signed ? 'Signed' : placeholder}`,
     weight: 'normal',
     intent: 'default',
     children: [],
@@ -131,6 +167,46 @@ export function freezeSnapshot(nodes: readonly IRNode[], opts: SnapshotOptions):
         if (frozen !== null) result.push(frozen);
         break;
       }
+      case 'input-file': {
+        const frozen = freezeInputFile(node as IRInputFileNode, opts);
+        if (frozen !== null) result.push(frozen);
+        break;
+      }
+      case 'signature': {
+        const frozen = freezeSignature(node as IRSignatureNode, opts);
+        if (frozen !== null) result.push(frozen);
+        break;
+      }
+      case 'repeat': {
+        const r = node as IRRepeatNode;
+        for (const item of r.items) {
+          // Mirror the walker's extractItemValues: strip the prefix so child IDs
+          // like "name" resolve against scoped values instead of flat-keyed ones.
+          const prefix = `${r.id}[${item.index}].`;
+          const scopedValues: Record<string, FieldValues[string]> = {};
+          for (const [key, val] of Object.entries(opts.values)) {
+            if (key.startsWith(prefix) && val !== undefined) {
+              scopedValues[key.slice(prefix.length)] = val as FieldValues[string];
+            }
+          }
+          const itemOpts: SnapshotOptions = { ...opts, values: scopedValues };
+          const itemLabel: IRTextNode = {
+            type: 'text',
+            id: undefined,
+            content: `${r.label} — Item ${item.index + 1}`,
+            weight: 'medium',
+            intent: 'default',
+            children: [],
+          };
+          const frozenChildren = freezeSnapshot(item.children, itemOpts);
+          if (frozenChildren.length > 0) {
+            result.push(itemLabel, ...frozenChildren);
+          } else if (!opts.omitEmpty) {
+            result.push(itemLabel);
+          }
+        }
+        break;
+      }
       case 'container': {
         const c = node as IRContainerNode;
         const frozenChildren = freezeSnapshot(c.children, opts);
@@ -140,10 +216,12 @@ export function freezeSnapshot(nodes: readonly IRNode[], opts: SnapshotOptions):
         break;
       }
       case 'submit':
-        // Submit buttons are removed from snapshot views
+      case 'repeat-item':
+        // Submit buttons and raw repeat-item nodes are removed from snapshot views.
+        // repeat-item nodes are consumed by the 'repeat' case above.
         break;
       default:
-        // heading, text, error-form, error-field — pass through unchanged
+        // heading, text, error-form, error-field, custom — pass through unchanged
         result.push(node);
     }
   }
