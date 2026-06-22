@@ -1,0 +1,44 @@
+{
+  "name": "@renderly/web-components",
+  "version": "0.1.0",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "./dist/index.js",
+    "./dist/index.cjs"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@renderly/core": "workspace:*",
+    "@renderly/html": "workspace:*",
+    "@renderly/input": "workspace:*",
+    "@renderly/schema": "workspace:*",
+    "@renderly/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^1.6.0",
+    "happy-dom": "^14.0.0",
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  }
+}

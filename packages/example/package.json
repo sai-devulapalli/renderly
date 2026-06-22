@@ -1,0 +1,43 @@
+{
+  "name": "@renderly/example",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/form.cjs",
+  "module": "dist/form.js",
+  "types": "dist/form.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/form.d.ts",
+      "import": "./dist/form.js",
+      "require": "./dist/form.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/form.ts --format esm,cjs --dts --clean",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@renderly/core": "workspace:*",
+    "@renderly/html": "workspace:*",
+    "@renderly/input": "workspace:*",
+    "@renderly/react": "workspace:*",
+    "@renderly/schema": "workspace:*",
+    "@renderly/shared": "workspace:*",
+    "@renderly/submit": "workspace:*"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^14.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@vitest/coverage-v8": "^1.6.0",
+    "jsdom": "^24.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  }
+}

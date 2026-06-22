@@ -1,0 +1,22 @@
+{
+  "errors": {
+    "validation": {
+      "required": "Field '{{field}}' is required",
+      "invalidType": "Field '{{field}}' has an invalid type, expected '{{expected}}'",
+      "unknownElement": "Unknown element type '{{type}}' at path '{{path}}'"
+    },
+    "parse": {
+      "invalidJson": "Input is not valid JSON",
+      "missingField": "Required field '{{field}}' is missing"
+    }
+  },
+  "document": {
+    "submitLabel": "Submit"
+  },
+  "schema": {
+    "unknownType": "Unknown element type '{{type}}' at path '{{path}}'",
+    "missingId": "Input element at path '{{path}}' is missing required 'id' field",
+    "duplicateId": "Duplicate element id '{{id}}' found in document",
+    "invalidDocument": "Document failed schema validation: {{details}}"
+  }
+}

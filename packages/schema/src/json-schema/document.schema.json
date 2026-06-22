@@ -1,0 +1,359 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "renderly/document",
+  "title": "RenderlyDocument",
+  "type": "object",
+  "required": ["version", "elements"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string", "minLength": 1 },
+    "title": { "type": "string" },
+    "elements": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Element" }
+    },
+    "errors": { "$ref": "#/$defs/FormErrors" }
+  },
+  "$defs": {
+    "Element": {
+      "oneOf": [
+        { "$ref": "#/$defs/ContainerElement" },
+        { "$ref": "#/$defs/HeadingElement" },
+        { "$ref": "#/$defs/TextElement" },
+        { "$ref": "#/$defs/TextInputElement" },
+        { "$ref": "#/$defs/NumberInputElement" },
+        { "$ref": "#/$defs/DateInputElement" },
+        { "$ref": "#/$defs/ChoiceInputElement" },
+        { "$ref": "#/$defs/FileInputElement" },
+        { "$ref": "#/$defs/SubmitElement" },
+        { "$ref": "#/$defs/ComputedElement" },
+        { "$ref": "#/$defs/RepeatElement" },
+        { "$ref": "#/$defs/SignatureElement" },
+        { "$ref": "#/$defs/CustomElement" }
+      ]
+    },
+    "DirectionValue": { "enum": ["row", "column"] },
+    "GapValue": { "enum": ["none", "sm", "md", "lg"] },
+    "ColsValue": { "type": "integer", "minimum": 1, "maximum": 12 },
+    "ResponsiveDirection": {
+      "oneOf": [
+        { "$ref": "#/$defs/DirectionValue" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "default": { "$ref": "#/$defs/DirectionValue" },
+            "sm":      { "$ref": "#/$defs/DirectionValue" },
+            "md":      { "$ref": "#/$defs/DirectionValue" },
+            "lg":      { "$ref": "#/$defs/DirectionValue" },
+            "xl":      { "$ref": "#/$defs/DirectionValue" }
+          }
+        }
+      ]
+    },
+    "ResponsiveGap": {
+      "oneOf": [
+        { "$ref": "#/$defs/GapValue" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "default": { "$ref": "#/$defs/GapValue" },
+            "sm":      { "$ref": "#/$defs/GapValue" },
+            "md":      { "$ref": "#/$defs/GapValue" },
+            "lg":      { "$ref": "#/$defs/GapValue" },
+            "xl":      { "$ref": "#/$defs/GapValue" }
+          }
+        }
+      ]
+    },
+    "ResponsiveCols": {
+      "oneOf": [
+        { "$ref": "#/$defs/ColsValue" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "default": { "$ref": "#/$defs/ColsValue" },
+            "sm":      { "$ref": "#/$defs/ColsValue" },
+            "md":      { "$ref": "#/$defs/ColsValue" },
+            "lg":      { "$ref": "#/$defs/ColsValue" },
+            "xl":      { "$ref": "#/$defs/ColsValue" }
+          }
+        }
+      ]
+    },
+    "RuleOperator": {
+      "enum": ["eq", "neq", "gt", "gte", "lt", "lte", "in", "nin", "empty", "notempty"]
+    },
+    "RuleAction": {
+      "enum": ["hide", "show", "require", "optional"]
+    },
+    "RuleConditionValue": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "number" },
+        {
+          "type": "array",
+          "items": { "oneOf": [{ "type": "string" }, { "type": "number" }] }
+        }
+      ]
+    },
+    "RuleCondition": {
+      "type": "object",
+      "required": ["field", "op"],
+      "additionalProperties": false,
+      "properties": {
+        "field": { "type": "string", "minLength": 1 },
+        "op":    { "$ref": "#/$defs/RuleOperator" },
+        "value": { "$ref": "#/$defs/RuleConditionValue" }
+      }
+    },
+    "ConditionalRule": {
+      "type": "object",
+      "required": ["action", "when"],
+      "additionalProperties": false,
+      "properties": {
+        "action": { "$ref": "#/$defs/RuleAction" },
+        "when":   { "$ref": "#/$defs/RuleCondition" }
+      }
+    },
+    "ValidationRule": {
+      "type": "object",
+      "required": ["action", "when", "message"],
+      "additionalProperties": false,
+      "properties": {
+        "action":  { "const": "error" },
+        "when":    { "$ref": "#/$defs/RuleCondition" },
+        "message": { "type": "string", "minLength": 1 }
+      }
+    },
+    "Rule": {
+      "oneOf": [
+        { "$ref": "#/$defs/ConditionalRule" },
+        { "$ref": "#/$defs/ValidationRule" }
+      ]
+    },
+    "RulesArray": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Rule" }
+    },
+    "ContainerElement": {
+      "type": "object",
+      "required": ["type", "children"],
+      "additionalProperties": false,
+      "properties": {
+        "type":      { "const": "container" },
+        "id":        { "type": "string", "minLength": 1 },
+        "direction": { "$ref": "#/$defs/ResponsiveDirection" },
+        "gap":       { "$ref": "#/$defs/ResponsiveGap" },
+        "cols":      { "$ref": "#/$defs/ResponsiveCols" },
+        "children":  { "type": "array", "items": { "$ref": "#/$defs/Element" } },
+        "rules":     { "$ref": "#/$defs/RulesArray" }
+      }
+    },
+    "HeadingElement": {
+      "type": "object",
+      "required": ["type", "level", "text"],
+      "additionalProperties": false,
+      "properties": {
+        "type":  { "const": "heading" },
+        "id":    { "type": "string", "minLength": 1 },
+        "level": { "type": "integer", "minimum": 1, "maximum": 6 },
+        "text":  { "type": "string" },
+        "size":  { "enum": ["sm", "md", "lg", "xl"] },
+        "rules": { "$ref": "#/$defs/RulesArray" }
+      }
+    },
+    "TextElement": {
+      "type": "object",
+      "required": ["type", "content"],
+      "additionalProperties": false,
+      "properties": {
+        "type":    { "const": "text" },
+        "id":      { "type": "string", "minLength": 1 },
+        "content": { "type": "string" },
+        "weight":  { "enum": ["normal", "medium", "bold"] },
+        "intent":  { "enum": ["default", "accent", "good", "danger", "muted"] },
+        "rules":   { "$ref": "#/$defs/RulesArray" }
+      }
+    },
+    "TextInputElement": {
+      "type": "object",
+      "required": ["type", "kind", "id", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "type":        { "const": "input" },
+        "kind":        { "const": "text" },
+        "id":          { "type": "string", "minLength": 1 },
+        "label":       { "type": "string" },
+        "placeholder": { "type": "string" },
+        "required":    { "type": "boolean" },
+        "minLength":   { "type": "integer", "minimum": 0 },
+        "maxLength":   { "type": "integer", "minimum": 0 },
+        "rules":       { "$ref": "#/$defs/RulesArray" }
+      }
+    },
+    "NumberInputElement": {
+      "type": "object",
+      "required": ["type", "kind", "id", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "type":        { "const": "input" },
+        "kind":        { "const": "number" },
+        "id":          { "type": "string", "minLength": 1 },
+        "label":       { "type": "string" },
+        "placeholder": { "type": "string" },
+        "required":    { "type": "boolean" },
+        "min":         { "type": "number" },
+        "max":         { "type": "number" },
+        "rules":       { "$ref": "#/$defs/RulesArray" }
+      }
+    },
+    "DateInputElement": {
+      "type": "object",
+      "required": ["type", "kind", "id", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "type":     { "const": "input" },
+        "kind":     { "const": "date" },
+        "id":       { "type": "string", "minLength": 1 },
+        "label":    { "type": "string" },
+        "required": { "type": "boolean" },
+        "min":      { "type": "string" },
+        "max":      { "type": "string" },
+        "rules":    { "$ref": "#/$defs/RulesArray" }
+      }
+    },
+    "ChoiceInputElement": {
+      "type": "object",
+      "required": ["type", "kind", "id", "label", "options"],
+      "additionalProperties": false,
+      "properties": {
+        "type":     { "const": "input" },
+        "kind":     { "const": "choice" },
+        "id":       { "type": "string", "minLength": 1 },
+        "label":    { "type": "string" },
+        "required": { "type": "boolean" },
+        "multiple": { "type": "boolean" },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/ChoiceOption" }
+        },
+        "rules": { "$ref": "#/$defs/RulesArray" }
+      }
+    },
+    "ChoiceOption": {
+      "type": "object",
+      "required": ["value", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "value": { "type": "string" },
+        "label": { "type": "string" }
+      }
+    },
+    "SubmitElement": {
+      "type": "object",
+      "required": ["type", "id", "label", "route"],
+      "additionalProperties": false,
+      "properties": {
+        "type":    { "const": "submit" },
+        "id":      { "type": "string", "minLength": 1 },
+        "label":   { "type": "string" },
+        "route":   { "type": "string", "minLength": 1 },
+        "context": { "type": "object" },
+        "rules":   { "$ref": "#/$defs/RulesArray" }
+      }
+    },
+    "ComputedFormat": {
+      "enum": ["number", "currency", "percent"]
+    },
+    "ComputedElement": {
+      "type": "object",
+      "required": ["type", "id", "label", "expr"],
+      "additionalProperties": false,
+      "properties": {
+        "type":   { "const": "computed" },
+        "id":     { "type": "string", "minLength": 1 },
+        "label":  { "type": "string" },
+        "expr":   { "type": "string", "minLength": 1 },
+        "format": { "$ref": "#/$defs/ComputedFormat" },
+        "rules":  { "$ref": "#/$defs/RulesArray" }
+      }
+    },
+    "FormErrors": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "form": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "FileInputElement": {
+      "type": "object",
+      "required": ["type", "kind", "id", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "type":     { "const": "input" },
+        "kind":     { "const": "file" },
+        "id":       { "type": "string", "minLength": 1 },
+        "label":    { "type": "string" },
+        "accept":   { "type": "string" },
+        "multiple": { "type": "boolean" },
+        "required": { "type": "boolean" },
+        "rules":    { "$ref": "#/$defs/RulesArray" }
+      }
+    },
+    "SignatureElement": {
+      "type": "object",
+      "required": ["type", "id", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "type":     { "const": "signature" },
+        "id":       { "type": "string", "minLength": 1 },
+        "label":    { "type": "string" },
+        "required": { "type": "boolean" },
+        "rules":    { "$ref": "#/$defs/RulesArray" }
+      }
+    },
+    "CustomElement": {
+      "type": "object",
+      "required": ["type", "kind", "id"],
+      "additionalProperties": false,
+      "properties": {
+        "type":  { "const": "custom" },
+        "kind":  { "type": "string", "minLength": 1 },
+        "id":    { "type": "string", "minLength": 1 },
+        "label": { "type": "string" },
+        "props": { "type": "object" },
+        "rules": { "$ref": "#/$defs/RulesArray" }
+      }
+    },
+    "RepeatElement": {
+      "type": "object",
+      "required": ["type", "id", "label", "template"],
+      "additionalProperties": false,
+      "properties": {
+        "type":        { "const": "repeat" },
+        "id":          { "type": "string", "minLength": 1 },
+        "label":       { "type": "string" },
+        "template":    { "type": "array", "items": { "$ref": "#/$defs/Element" }, "minItems": 1 },
+        "minItems":    { "type": "integer", "minimum": 0 },
+        "maxItems":    { "type": "integer", "minimum": 1 },
+        "addLabel":    { "type": "string" },
+        "removeLabel": { "type": "string" },
+        "rules":       { "$ref": "#/$defs/RulesArray" }
+      }
+    }
+  }
+}

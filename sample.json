@@ -1,0 +1,84 @@
+{
+  "version": "1",
+  "title": "Patient Registration",
+  "elements": [
+    { "type": "heading", "level": 1, "text": "Patient Registration" },
+    {
+      "type": "container",
+      "direction": "row",
+      "gap": "md",
+      "children": [
+        {
+          "type": "input",
+          "kind": "text",
+          "id": "first_name",
+          "label": "First Name",
+          "required": true,
+          "placeholder": "Jane"
+        },
+        {
+          "type": "input",
+          "kind": "text",
+          "id": "last_name",
+          "label": "Last Name",
+          "required": true,
+          "placeholder": "Smith"
+        }
+      ]
+    },
+    {
+      "type": "input",
+      "kind": "date",
+      "id": "dob",
+      "label": "Date of Birth",
+      "required": true
+    },
+    {
+      "type": "input",
+      "kind": "choice",
+      "id": "gender",
+      "label": "Gender",
+      "options": [
+        { "value": "m", "label": "Male" },
+        { "value": "f", "label": "Female" },
+        { "value": "o", "label": "Other / Prefer not to say" }
+      ]
+    },
+    {
+      "type": "input",
+      "kind": "text",
+      "id": "guardian_name",
+      "label": "Guardian Name",
+      "placeholder": "Guardian's full name",
+      "rules": [
+        { "action": "hide", "when": { "field": "patient_type", "op": "neq", "value": "minor" } }
+      ]
+    },
+    {
+      "type": "input",
+      "kind": "number",
+      "id": "age",
+      "label": "Age",
+      "min": 0,
+      "max": 120
+    },
+    {
+      "type": "computed",
+      "id": "bmi",
+      "label": "BMI",
+      "expr": "weight / (height * height)",
+      "format": "number"
+    },
+    {
+      "type": "text",
+      "content": "By submitting you agree to our terms.",
+      "intent": "muted"
+    },
+    {
+      "type": "submit",
+      "id": "submit_btn",
+      "label": "Register Patient",
+      "route": "/api/patients"
+    }
+  ]
+}

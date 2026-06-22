@@ -1,0 +1,134 @@
+/*
+ * renderly.css — companion stylesheet for @renderly/html
+ *
+ * Reads the data-* attributes emitted by renderContainer and applies
+ * mobile-first responsive layout. Import once in your host application:
+ *
+ *   import '@renderly/html/renderly.css';
+ *
+ * Gap tokens map to CSS custom properties so host apps can override them:
+ *   --rly-gap-none, --rly-gap-sm, --rly-gap-md, --rly-gap-lg
+ */
+
+:root {
+  --rly-gap-none: 0;
+  --rly-gap-sm:   0.5rem;
+  --rly-gap-md:   1rem;
+  --rly-gap-lg:   1.5rem;
+}
+
+/* ── Base container ─────────────────────────────────────────────────────────── */
+
+[data-direction],
+[data-cols] {
+  box-sizing: border-box;
+  display: flex;
+}
+
+/* ── Flex direction ─────────────────────────────────────────────────────────── */
+
+[data-direction="column"] { flex-direction: column; }
+[data-direction="row"]    { flex-direction: row; flex-wrap: wrap; }
+
+/* ── Grid (cols) ────────────────────────────────────────────────────────────── */
+
+[data-cols]   { display: grid; }
+[data-cols="1"]  { grid-template-columns: 1fr; }
+[data-cols="2"]  { grid-template-columns: repeat(2,  1fr); }
+[data-cols="3"]  { grid-template-columns: repeat(3,  1fr); }
+[data-cols="4"]  { grid-template-columns: repeat(4,  1fr); }
+[data-cols="5"]  { grid-template-columns: repeat(5,  1fr); }
+[data-cols="6"]  { grid-template-columns: repeat(6,  1fr); }
+[data-cols="7"]  { grid-template-columns: repeat(7,  1fr); }
+[data-cols="8"]  { grid-template-columns: repeat(8,  1fr); }
+[data-cols="9"]  { grid-template-columns: repeat(9,  1fr); }
+[data-cols="10"] { grid-template-columns: repeat(10, 1fr); }
+[data-cols="11"] { grid-template-columns: repeat(11, 1fr); }
+[data-cols="12"] { grid-template-columns: repeat(12, 1fr); }
+
+/* ── Gap ────────────────────────────────────────────────────────────────────── */
+
+[data-gap="none"] { gap: var(--rly-gap-none); }
+[data-gap="sm"]   { gap: var(--rly-gap-sm); }
+[data-gap="md"]   { gap: var(--rly-gap-md); }
+[data-gap="lg"]   { gap: var(--rly-gap-lg); }
+
+/* ── Responsive — sm: 640px ─────────────────────────────────────────────────── */
+
+@media (min-width: 640px) {
+  [data-sm-direction="column"] { flex-direction: column; }
+  [data-sm-direction="row"]    { flex-direction: row; flex-wrap: wrap; }
+
+  [data-sm-cols]    { display: grid; }
+  [data-sm-cols="1"]  { grid-template-columns: 1fr; }
+  [data-sm-cols="2"]  { grid-template-columns: repeat(2,  1fr); }
+  [data-sm-cols="3"]  { grid-template-columns: repeat(3,  1fr); }
+  [data-sm-cols="4"]  { grid-template-columns: repeat(4,  1fr); }
+  [data-sm-cols="6"]  { grid-template-columns: repeat(6,  1fr); }
+  [data-sm-cols="12"] { grid-template-columns: repeat(12, 1fr); }
+
+  [data-sm-gap="none"] { gap: var(--rly-gap-none); }
+  [data-sm-gap="sm"]   { gap: var(--rly-gap-sm); }
+  [data-sm-gap="md"]   { gap: var(--rly-gap-md); }
+  [data-sm-gap="lg"]   { gap: var(--rly-gap-lg); }
+}
+
+/* ── Responsive — md: 768px ─────────────────────────────────────────────────── */
+
+@media (min-width: 768px) {
+  [data-md-direction="column"] { flex-direction: column; }
+  [data-md-direction="row"]    { flex-direction: row; flex-wrap: wrap; }
+
+  [data-md-cols]    { display: grid; }
+  [data-md-cols="1"]  { grid-template-columns: 1fr; }
+  [data-md-cols="2"]  { grid-template-columns: repeat(2,  1fr); }
+  [data-md-cols="3"]  { grid-template-columns: repeat(3,  1fr); }
+  [data-md-cols="4"]  { grid-template-columns: repeat(4,  1fr); }
+  [data-md-cols="6"]  { grid-template-columns: repeat(6,  1fr); }
+  [data-md-cols="12"] { grid-template-columns: repeat(12, 1fr); }
+
+  [data-md-gap="none"] { gap: var(--rly-gap-none); }
+  [data-md-gap="sm"]   { gap: var(--rly-gap-sm); }
+  [data-md-gap="md"]   { gap: var(--rly-gap-md); }
+  [data-md-gap="lg"]   { gap: var(--rly-gap-lg); }
+}
+
+/* ── Responsive — lg: 1024px ────────────────────────────────────────────────── */
+
+@media (min-width: 1024px) {
+  [data-lg-direction="column"] { flex-direction: column; }
+  [data-lg-direction="row"]    { flex-direction: row; flex-wrap: wrap; }
+
+  [data-lg-cols]    { display: grid; }
+  [data-lg-cols="1"]  { grid-template-columns: 1fr; }
+  [data-lg-cols="2"]  { grid-template-columns: repeat(2,  1fr); }
+  [data-lg-cols="3"]  { grid-template-columns: repeat(3,  1fr); }
+  [data-lg-cols="4"]  { grid-template-columns: repeat(4,  1fr); }
+  [data-lg-cols="6"]  { grid-template-columns: repeat(6,  1fr); }
+  [data-lg-cols="12"] { grid-template-columns: repeat(12, 1fr); }
+
+  [data-lg-gap="none"] { gap: var(--rly-gap-none); }
+  [data-lg-gap="sm"]   { gap: var(--rly-gap-sm); }
+  [data-lg-gap="md"]   { gap: var(--rly-gap-md); }
+  [data-lg-gap="lg"]   { gap: var(--rly-gap-lg); }
+}
+
+/* ── Responsive — xl: 1280px ────────────────────────────────────────────────── */
+
+@media (min-width: 1280px) {
+  [data-xl-direction="column"] { flex-direction: column; }
+  [data-xl-direction="row"]    { flex-direction: row; flex-wrap: wrap; }
+
+  [data-xl-cols]    { display: grid; }
+  [data-xl-cols="1"]  { grid-template-columns: 1fr; }
+  [data-xl-cols="2"]  { grid-template-columns: repeat(2,  1fr); }
+  [data-xl-cols="3"]  { grid-template-columns: repeat(3,  1fr); }
+  [data-xl-cols="4"]  { grid-template-columns: repeat(4,  1fr); }
+  [data-xl-cols="6"]  { grid-template-columns: repeat(6,  1fr); }
+  [data-xl-cols="12"] { grid-template-columns: repeat(12, 1fr); }
+
+  [data-xl-gap="none"] { gap: var(--rly-gap-none); }
+  [data-xl-gap="sm"]   { gap: var(--rly-gap-sm); }
+  [data-xl-gap="md"]   { gap: var(--rly-gap-md); }
+  [data-xl-gap="lg"]   { gap: var(--rly-gap-lg); }
+}
