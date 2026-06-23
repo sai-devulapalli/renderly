@@ -1,3 +1,7 @@
+// Ambient declaration so TypeScript accepts process.env without @types/node.
+// The typeof guard below ensures it is safe in browser environments too.
+declare const process: { env?: Record<string, string | undefined> } | undefined;
+
 export type AppEnv = 'local' | 'staging' | 'production';
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
