@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { loadConfig, isValidAppEnv } from '../../src/env/config.js';
 
 describe('loadConfig', () => {
@@ -45,6 +45,17 @@ describe('loadConfig', () => {
     const config = loadConfig();
     expect(config.env).toBe('local');
     expect(config.logLevel).toBe('debug');
+  });
+
+  it('returns local config in a browser environment where process is undefined', () => {
+    vi.stubGlobal('process', undefined);
+    try {
+      const config = loadConfig();
+      expect(config.env).toBe('local');
+      expect(config.logLevel).toBe('debug');
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
 
