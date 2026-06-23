@@ -156,6 +156,7 @@ export interface IRRepeatNode {
 
 export interface IRRepeatItemNode {
   readonly type: 'repeat-item';
+  readonly id?: undefined;
   readonly index: number;
   readonly children: readonly IRNode[];
 }
