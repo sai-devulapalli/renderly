@@ -33,7 +33,6 @@
     "commander": "^15.0.0"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
     "@vitest/coverage-v8": "^1.6.0",
     "tsup": "^8.0.2",
     "typescript": "^5.4.5",
