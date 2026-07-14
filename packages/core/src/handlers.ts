@@ -21,6 +21,7 @@ import type {
 import { fieldErrorsFor } from '@renderly/schema';
 import { ok } from '@renderly/shared';
 import type { ElementHandler } from './types.js';
+import type { ElementRegistryKey } from './registry.js';
 import {
   buildContainerNode,
   buildHeadingNode,
@@ -228,18 +229,22 @@ export const customHandler: ElementHandler = (element, context) => {
   return ok(buildCustomNode(el, formErrors));
 };
 
-export const ALL_HANDLERS: ReadonlyMap<string, ElementHandler> = new Map([
-  ['container', containerHandler],
-  ['heading', headingHandler],
-  ['text', textHandler],
-  ['input:text', textInputHandler],
-  ['input:number', numberInputHandler],
-  ['input:date', dateInputHandler],
-  ['input:choice', choiceInputHandler],
-  ['submit', submitHandler],
-  ['computed', computedHandler],
-  ['repeat', repeatHandler],
-  ['input:file', fileInputHandler],
-  ['signature', signatureHandler],
-  ['custom', customHandler],
-] as const);
+const ALL_HANDLERS_BY_KEY = {
+  container: containerHandler,
+  heading: headingHandler,
+  text: textHandler,
+  'input:text': textInputHandler,
+  'input:number': numberInputHandler,
+  'input:date': dateInputHandler,
+  'input:choice': choiceInputHandler,
+  submit: submitHandler,
+  computed: computedHandler,
+  repeat: repeatHandler,
+  'input:file': fileInputHandler,
+  signature: signatureHandler,
+  custom: customHandler,
+} satisfies Record<ElementRegistryKey, ElementHandler>;
+
+export const ALL_HANDLERS: ReadonlyMap<string, ElementHandler> = new Map(
+  Object.entries(ALL_HANDLERS_BY_KEY),
+);

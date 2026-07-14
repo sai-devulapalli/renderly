@@ -1,9 +1,21 @@
 import { describe, it, expect } from 'vitest';
 import type { Document } from '@renderly/schema';
+import type { Logger } from '@renderly/shared';
 import { isOk } from '@renderly/shared';
 import { walk, createDefaultRegistry } from '../../src/index.js';
 
 const registry = createDefaultRegistry();
+
+function noopLogger(): Logger {
+  const logger: Logger = {
+    debug: () => {},
+    info: () => {},
+    warn: () => {},
+    error: () => {},
+    withTrace: () => logger,
+  };
+  return logger;
+}
 
 // Minimal document with all the elements we need for rule testing
 const FORM: Document = {
@@ -28,7 +40,7 @@ const FORM: Document = {
 
 describe('walk with rules — hide action', () => {
   it('excludes hidden elements from the IR when condition is met', () => {
-    const result = walk(FORM, registry, { values: { has_guardian: 'no' } });
+    const result = walk(FORM, registry, { values: { has_guardian: 'no' }, logger: noopLogger() });
     expect(isOk(result)).toBe(true);
     if (!isOk(result)) return;
     const ids = result.value
@@ -38,7 +50,7 @@ describe('walk with rules — hide action', () => {
   });
 
   it('includes element when hide condition is not met', () => {
-    const result = walk(FORM, registry, { values: { has_guardian: 'yes' } });
+    const result = walk(FORM, registry, { values: { has_guardian: 'yes' }, logger: noopLogger() });
     expect(isOk(result)).toBe(true);
     if (!isOk(result)) return;
     const ids = result.value
@@ -193,6 +205,86 @@ describe('walk with rules — numeric operators', () => {
     expect(isOk(minor)).toBe(true);
     if (!isOk(minor)) return;
     expect(minor.value).toHaveLength(2);
+  });
+});
+
+// ── required override across node types ───────────────────────────────────────
+// withRequiredOverride only rewrites input-* nodes; other node types pass through
+// unchanged. Exercise each input kind plus a non-input node.
+
+describe('walk with rules — required override across node types', () => {
+  it('overrides required on input-number, input-date, and input-choice nodes', () => {
+    const doc: Document = {
+      version: '1',
+      elements: [
+        {
+          type: 'input', kind: 'number', id: 'qty', label: 'Quantity', required: false,
+          rules: [{ action: 'require', when: { field: 'needs_qty', op: 'eq', value: 'yes' } }],
+        },
+        {
+          type: 'input', kind: 'date', id: 'dob', label: 'DOB', required: false,
+          rules: [{ action: 'require', when: { field: 'needs_qty', op: 'eq', value: 'yes' } }],
+        },
+        {
+          type: 'input', kind: 'choice', id: 'plan', label: 'Plan', required: false,
+          options: [{ value: 'a', label: 'A' }],
+          rules: [{ action: 'require', when: { field: 'needs_qty', op: 'eq', value: 'yes' } }],
+        },
+      ],
+    };
+
+    const result = walk(doc, registry, { values: { needs_qty: 'yes' } });
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    for (const node of result.value) {
+      expect((node as { required: boolean }).required).toBe(true);
+    }
+  });
+
+  it('leaves a non-input node unchanged when a require rule matches', () => {
+    const doc: Document = {
+      version: '1',
+      elements: [
+        {
+          type: 'heading', level: 2, text: 'Section',
+          rules: [{ action: 'require', when: { field: 'x', op: 'eq', value: 'yes' } }],
+        },
+      ],
+    };
+
+    const result = walk(doc, registry, { values: { x: 'yes' } });
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect(result.value[0]?.type).toBe('heading');
+    expect((result.value[0] as { required?: boolean }).required).toBeUndefined();
+  });
+});
+
+// ── repeat element with a visible conditional rule ──────────────────────────────
+// Exercises the rules-branch's walkChildren closure, which recurses with an
+// item-scoped values/errors object rather than the container's own scope.
+
+describe('walk with rules — repeat element with a visible rule', () => {
+  it('recurses into the template with item-scoped values and errors', () => {
+    const doc: Document = {
+      version: '1',
+      elements: [{
+        type: 'repeat',
+        id: 'members',
+        label: 'Members',
+        template: [{ type: 'input', kind: 'text', id: 'name', label: 'Name' }],
+        minItems: 1,
+        rules: [{ action: 'show', when: { field: 'has_members', op: 'eq', value: 'yes' } }],
+      }],
+      errors: { fields: { 'members[0].name': ['Required'] } },
+    };
+    const result = walk(doc, registry, {
+      values: { has_members: 'yes', 'members[0].name': 'Alice' },
+    });
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    const repeatNode = result.value[0] as { items: readonly { children: readonly { errors: readonly string[] }[] }[] };
+    expect(repeatNode.items[0]?.children[0]?.errors).toEqual(['Required']);
   });
 });
 

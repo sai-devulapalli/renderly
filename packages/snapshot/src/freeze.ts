@@ -8,7 +8,6 @@ import type {
   IRInputFileNode,
   IRSignatureNode,
   IRRepeatNode,
-  IRContainerNode,
 } from '@renderly/schema';
 import type { FieldValues } from '@renderly/schema';
 import type { SnapshotOptions } from './types.js';
@@ -148,37 +147,37 @@ export function freezeSnapshot(nodes: readonly IRNode[], opts: SnapshotOptions):
   for (const node of nodes) {
     switch (node.type) {
       case 'input-text': {
-        const frozen = freezeInputText(node as IRInputTextNode, opts);
+        const frozen = freezeInputText(node, opts);
         if (frozen !== null) result.push(frozen);
         break;
       }
       case 'input-number': {
-        const frozen = freezeInputNumber(node as IRInputNumberNode, opts);
+        const frozen = freezeInputNumber(node, opts);
         if (frozen !== null) result.push(frozen);
         break;
       }
       case 'input-date': {
-        const frozen = freezeInputDate(node as IRInputDateNode, opts);
+        const frozen = freezeInputDate(node, opts);
         if (frozen !== null) result.push(frozen);
         break;
       }
       case 'input-choice': {
-        const frozen = freezeInputChoice(node as IRInputChoiceNode, opts);
+        const frozen = freezeInputChoice(node, opts);
         if (frozen !== null) result.push(frozen);
         break;
       }
       case 'input-file': {
-        const frozen = freezeInputFile(node as IRInputFileNode, opts);
+        const frozen = freezeInputFile(node, opts);
         if (frozen !== null) result.push(frozen);
         break;
       }
       case 'signature': {
-        const frozen = freezeSignature(node as IRSignatureNode, opts);
+        const frozen = freezeSignature(node, opts);
         if (frozen !== null) result.push(frozen);
         break;
       }
       case 'repeat': {
-        const r = node as IRRepeatNode;
+        const r = node;
         for (const item of r.items) {
           // Mirror the walker's extractItemValues: strip the prefix so child IDs
           // like "name" resolve against scoped values instead of flat-keyed ones.
@@ -208,10 +207,9 @@ export function freezeSnapshot(nodes: readonly IRNode[], opts: SnapshotOptions):
         break;
       }
       case 'container': {
-        const c = node as IRContainerNode;
-        const frozenChildren = freezeSnapshot(c.children, opts);
+        const frozenChildren = freezeSnapshot(node.children, opts);
         if (frozenChildren.length > 0) {
-          result.push({ ...c, children: frozenChildren });
+          result.push({ ...node, children: frozenChildren });
         }
         break;
       }

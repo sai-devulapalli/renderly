@@ -35,4 +35,3 @@ jobs:
 
       - name: Check publishability
         run: pnpm check:publishability
-        continue-on-error: true

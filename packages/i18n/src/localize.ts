@@ -34,9 +34,9 @@ function localizeElement(
           label: r(`${el.id}.label`, el.label),
         };
         if ('placeholder' in base && base.placeholder !== undefined) {
-          return { ...base, placeholder: r(`${el.id}.placeholder`, base.placeholder) } as Element;
+          return { ...base, placeholder: r(`${el.id}.placeholder`, base.placeholder) };
         }
-        return base as Element;
+        return base;
       }
 
       if (el.kind === 'choice') {
@@ -47,7 +47,7 @@ function localizeElement(
             ...opt,
             label: r(`${el.id}.option.${opt.value}`, opt.label),
           })),
-        } as Element;
+        };
       }
 
       return el;

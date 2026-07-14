@@ -88,6 +88,12 @@ describe('evaluateCondition — in / nin', () => {
       { status: 'closed' },
     )).toBe(false);
   });
+  it('nin: true when value is not an array', () => {
+    expect(evaluateCondition(
+      { field: 'x', op: 'nin', value: 'notanarray' as unknown as string[] },
+      { x: 'notanarray' },
+    )).toBe(true);
+  });
 });
 
 describe('evaluateCondition — empty / notempty', () => {
@@ -114,6 +120,19 @@ describe('evaluateCondition — empty / notempty', () => {
   });
   it('notempty: false for undefined field', () => {
     expect(evaluateCondition({ field: 'x', op: 'notempty' }, {})).toBe(false);
+  });
+  it('notempty: false for empty array', () => {
+    expect(evaluateCondition({ field: 'x', op: 'notempty' }, { x: [] })).toBe(false);
+  });
+  it('notempty: true for non-empty array', () => {
+    expect(evaluateCondition({ field: 'x', op: 'notempty' }, { x: ['a'] })).toBe(true);
+  });
+});
+
+describe('evaluateCondition — unknown operator', () => {
+  it('returns false for an operator outside the known set', () => {
+    const condition = { field: 'x', op: 'unknown' } as unknown as Parameters<typeof evaluateCondition>[0];
+    expect(evaluateCondition(condition, { x: 'anything' })).toBe(false);
   });
 });
 

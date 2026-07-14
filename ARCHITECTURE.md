@@ -214,7 +214,8 @@ Rules enforced by this graph:
 - `@renderly/shared` has **zero** production dependencies — it is the bottom of the stack.
 - `@renderly/schema` depends only on `@renderly/shared`.
 - `@renderly/core` depends on `@renderly/schema` + `@renderly/shared` — never on adapters.
-- Adapters (`input`, `html`, `react`) depend on `@renderly/schema` + `@renderly/shared` — never on each other.
+- Rendering adapters (`html`, `react`, `markdown`, `email`, `pdf`) depend on `@renderly/schema` + `@renderly/shared` — never on each other.
+- `@renderly/web-components` is a sanctioned exception: it depends on `@renderly/html` because it composes the HTML adapter's output into a live Custom Element rather than producing an independent target format. See [ADR-0006](./docs/adr/0006-web-components-depends-on-html-adapter.md). No other adapter may add a production dependency on another adapter without a new ADR making the same case.
 - `@renderly/submit` depends on `@renderly/schema` + `@renderly/shared` — does not import from adapters.
 - `@renderly/example` depends on all packages — it is the integration layer.
 - No circular dependencies.

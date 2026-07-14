@@ -67,6 +67,10 @@ describe('evaluateExpr — field references', () => {
   it('returns undefined when field value is non-numeric string', () => {
     expect(evaluateExpr('discount', { discount: 'twenty' })).toBeUndefined();
   });
+
+  it('resolves identifiers with uppercase letters, digits, and underscores', () => {
+    expect(evaluateExpr('Item_1', { Item_1: 4 })).toBe(4);
+  });
 });
 
 describe('evaluateExpr — error cases', () => {
@@ -88,6 +92,18 @@ describe('evaluateExpr — error cases', () => {
 
   it('returns undefined for unclosed paren', () => {
     expect(evaluateExpr('(1 + 2', {})).toBeUndefined();
+  });
+
+  it('returns undefined when an operator appears where a primary is expected', () => {
+    expect(evaluateExpr('5 + + 3', {})).toBeUndefined();
+  });
+
+  it('returns undefined for a lone decimal point (NaN numeric literal)', () => {
+    expect(evaluateExpr('.', {})).toBeUndefined();
+  });
+
+  it('returns undefined when negating a missing field', () => {
+    expect(evaluateExpr('-missing', {})).toBeUndefined();
   });
 });
 

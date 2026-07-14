@@ -4,6 +4,7 @@ import {
   buildInputTextNode, buildInputNumberNode, buildInputDateNode,
   buildInputChoiceNode, buildSubmitNode,
   buildFormErrorNode, buildFieldErrorNode,
+  buildRepeatItemNode, buildInputFileNode, buildSignatureNode, buildCustomNode,
 } from '../../src/builders.js';
 
 describe('buildContainerNode', () => {
@@ -187,5 +188,69 @@ describe('buildFieldErrorNode', () => {
     expect(node.type).toBe('error-field');
     expect(node.fieldId).toBe('email');
     expect(node.message).toBe('Invalid email');
+  });
+});
+
+describe('buildRepeatItemNode', () => {
+  it('creates a repeat-item node with index and children', () => {
+    const child = buildHeadingNode({ type: 'heading', level: 1, text: 'H' });
+    const node = buildRepeatItemNode(2, [child]);
+    expect(node.type).toBe('repeat-item');
+    expect(node.index).toBe(2);
+    expect(node.children).toHaveLength(1);
+  });
+});
+
+describe('buildInputFileNode', () => {
+  it('applies multiple=false and required=false defaults', () => {
+    const node = buildInputFileNode({ type: 'input', kind: 'file', id: 'f1', label: 'Attachment' }, []);
+    expect(node.multiple).toBe(false);
+    expect(node.required).toBe(false);
+    expect(node.accept).toBeUndefined();
+  });
+
+  it('uses provided accept, multiple, required, and errors', () => {
+    const node = buildInputFileNode(
+      { type: 'input', kind: 'file', id: 'f1', label: 'Attachment', accept: '.pdf', multiple: true, required: true },
+      ['Required'],
+    );
+    expect(node.accept).toBe('.pdf');
+    expect(node.multiple).toBe(true);
+    expect(node.required).toBe(true);
+    expect(node.errors).toEqual(['Required']);
+  });
+});
+
+describe('buildSignatureNode', () => {
+  it('applies required=false default', () => {
+    const node = buildSignatureNode({ type: 'signature', id: 'sig1', label: 'Sign here' }, []);
+    expect(node.required).toBe(false);
+  });
+
+  it('uses provided required and errors', () => {
+    const node = buildSignatureNode(
+      { type: 'signature', id: 'sig1', label: 'Sign here', required: true },
+      ['Required'],
+    );
+    expect(node.required).toBe(true);
+    expect(node.errors).toEqual(['Required']);
+  });
+});
+
+describe('buildCustomNode', () => {
+  it('applies empty props default', () => {
+    const node = buildCustomNode({ type: 'custom', kind: 'rating', id: 'cu1' }, []);
+    expect(node.props).toEqual({});
+    expect(node.label).toBeUndefined();
+  });
+
+  it('uses provided label, props, and errors', () => {
+    const node = buildCustomNode(
+      { type: 'custom', kind: 'rating', id: 'cu1', label: 'Rate us', props: { max: 5 } },
+      ['Required'],
+    );
+    expect(node.label).toBe('Rate us');
+    expect(node.props).toEqual({ max: 5 });
+    expect(node.errors).toEqual(['Required']);
   });
 });

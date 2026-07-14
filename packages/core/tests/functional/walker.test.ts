@@ -1,9 +1,30 @@
 import { describe, it, expect } from 'vitest';
 import type { Document } from '@renderly/schema';
+import type { Logger } from '@renderly/shared';
 import { isOk, isErr } from '@renderly/shared';
-import { walk, createDefaultRegistry, createRegistry } from '../../src/index.js';
+import type { Element } from '@renderly/schema';
+import { walk, createDefaultRegistry, createRegistry, DEFAULT_MAX_DEPTH } from '../../src/index.js';
+
+function nestContainers(depth: number): Element {
+  let el: Element = { type: 'text', content: 'leaf' };
+  for (let i = 0; i < depth; i++) {
+    el = { type: 'container', children: [el] };
+  }
+  return el;
+}
 
 const registry = createDefaultRegistry();
+
+function noopLogger(): Logger {
+  const logger: Logger = {
+    debug: () => {},
+    info: () => {},
+    warn: () => {},
+    error: () => {},
+    withTrace: () => logger,
+  };
+  return logger;
+}
 
 describe('walk — empty document', () => {
   it('returns ok with empty array', () => {
@@ -154,5 +175,94 @@ describe('walk — handler returns err', () => {
     if (isErr(result)) {
       expect(result.error.code).toBe('HANDLER_FAILED');
     }
+  });
+});
+
+describe('walk — repeat element without rules recurses into its template', () => {
+  it('propagates item-scoped values and errors into nested walkChildren calls', () => {
+    const doc: Document = {
+      version: '1',
+      elements: [{
+        type: 'repeat',
+        id: 'members',
+        label: 'Members',
+        template: [{ type: 'input', kind: 'text', id: 'name', label: 'Name' }],
+        minItems: 1,
+      }],
+      errors: { fields: { 'members[0].name': ['Required'] } },
+    };
+    const result = walk(doc, registry, { values: { 'members[0].name': 'Alice' } });
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    const repeatNode = result.value[0] as { items: readonly { children: readonly { errors: readonly string[] }[] }[] };
+    expect(repeatNode.items[0]?.children[0]?.errors).toEqual(['Required']);
+  });
+});
+
+describe('walk — unregistered element type with a visible conditional rule', () => {
+  it('returns err with UNREGISTERED_ELEMENT_TYPE when the rules-evaluation branch cannot resolve a handler', () => {
+    const emptyRegistry = createRegistry();
+    const doc: Document = {
+      version: '1',
+      elements: [{
+        type: 'heading', level: 1, text: 'H',
+        rules: [{ action: 'show', when: { field: 'x', op: 'eq', value: 'yes' } }],
+      }],
+    };
+    const result = walk(doc, emptyRegistry, { values: { x: 'yes' }, logger: noopLogger() });
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('UNREGISTERED_ELEMENT_TYPE');
+    }
+  });
+});
+
+describe('walk — handler returns err with a visible conditional rule', () => {
+  it('propagates handler error through the rules-evaluation branch', () => {
+    const failingRegistry = createRegistry();
+    failingRegistry.register('heading', () => ({
+      ok: false,
+      error: { code: 'HANDLER_FAILED', elementType: 'heading' },
+    }));
+    const doc: Document = {
+      version: '1',
+      elements: [{
+        type: 'heading', level: 1, text: 'H',
+        rules: [{ action: 'show', when: { field: 'x', op: 'eq', value: 'yes' } }],
+      }],
+    };
+    const result = walk(doc, failingRegistry, { values: { x: 'yes' }, logger: noopLogger() });
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('HANDLER_FAILED');
+    }
+  });
+});
+
+describe('walk — max nesting depth', () => {
+  it('walks a document nested one level short of the default limit', () => {
+    const doc: Document = { version: '1', elements: [nestContainers(DEFAULT_MAX_DEPTH - 1)] };
+    const result = walk(doc, registry);
+    expect(isOk(result)).toBe(true);
+  });
+
+  it('returns err with MAX_DEPTH_EXCEEDED instead of overflowing the call stack', () => {
+    const doc: Document = { version: '1', elements: [nestContainers(DEFAULT_MAX_DEPTH * 5)] };
+    const result = walk(doc, registry);
+    expect(isErr(result)).toBe(true);
+    if (isErr(result)) {
+      expect(result.error.code).toBe('MAX_DEPTH_EXCEEDED');
+      expect(result.error.elementType).toBe('container');
+    }
+  });
+
+  it('honors a custom maxDepth option', () => {
+    const doc: Document = { version: '1', elements: [nestContainers(10)] };
+    const shallow = walk(doc, registry, { maxDepth: 5 });
+    expect(isErr(shallow)).toBe(true);
+    if (isErr(shallow)) expect(shallow.error.code).toBe('MAX_DEPTH_EXCEEDED');
+
+    const deep = walk(doc, registry, { maxDepth: 20 });
+    expect(isOk(deep)).toBe(true);
   });
 });

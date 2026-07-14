@@ -370,6 +370,18 @@ describe('renderSubmit', () => {
     expect(result.value).toContain('&amp;');
     expect(result.value).toContain('&quot;');
   });
+
+  it('rejects a javascript: route, falling back to a safe href', () => {
+    const node: IRSubmitNode = {
+      type: 'submit', id: 'btn', label: 'Go',
+      route: 'javascript:alert(document.cookie)', context: {}, children: [],
+    };
+    const result = renderSubmit(node, noChildren);
+    expect(isOk(result)).toBe(true);
+    if (!isOk(result)) return;
+    expect(result.value).not.toContain('javascript:');
+    expect(result.value).toContain('href="#"');
+  });
 });
 
 // ── renderFormError ───────────────────────────────────────────────────────────
