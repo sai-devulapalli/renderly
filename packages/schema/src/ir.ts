@@ -156,6 +156,7 @@ export interface IRRepeatNode {
 
 export interface IRRepeatItemNode {
   readonly type: 'repeat-item';
+  readonly id?: undefined;
   readonly index: number;
   readonly children: readonly IRNode[];
 }
@@ -178,6 +179,9 @@ export type IRNode =
   | IRRepeatItemNode;
 
 export type IRNodeType = IRNode['type'];
+
+/** IRNodeType minus 'repeat-item' — every adapter unwraps repeat items to their `children` before dispatch, so 'repeat-item' itself is never looked up in a registry. */
+export type RenderableIRNodeType = Exclude<IRNodeType, 'repeat-item'>;
 
 // ── IR type guards ────────────────────────────────────────────────────────────
 

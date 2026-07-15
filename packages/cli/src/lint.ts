@@ -9,18 +9,14 @@ export interface LintIssue {
 
 function collectFieldIds(elements: readonly Element[], ids: Set<string>): void {
   for (const el of elements) {
-    if ('id' in el && typeof el.id === 'string') {
-      ids.add(el.id);
-    }
-    if (el.type === 'container' && Array.isArray(el.children)) {
-      collectFieldIds(el.children as readonly Element[], ids);
-    }
+    if (el.id !== undefined) ids.add(el.id);
+    if (el.type === 'container') collectFieldIds(el.children, ids);
   }
 }
 
 function collectDuplicates(elements: readonly Element[], seen: Set<string>, issues: LintIssue[]): void {
   for (const el of elements) {
-    if ('id' in el && typeof el.id === 'string') {
+    if (el.id !== undefined) {
       if (seen.has(el.id)) {
         issues.push({
           code: 'DUPLICATE_FIELD_ID',
@@ -32,31 +28,24 @@ function collectDuplicates(elements: readonly Element[], seen: Set<string>, issu
         seen.add(el.id);
       }
     }
-    if (el.type === 'container' && Array.isArray(el.children)) {
-      collectDuplicates(el.children as readonly Element[], seen, issues);
-    }
+    if (el.type === 'container') collectDuplicates(el.children, seen, issues);
   }
 }
 
 function checkRules(elements: readonly Element[], fieldIds: Set<string>, issues: LintIssue[]): void {
   for (const el of elements) {
-    const rules = (el as { rules?: unknown[] }).rules;
-    if (Array.isArray(rules)) {
-      for (const rule of rules) {
-        const cond = (rule as { when?: { field?: string } }).when;
-        if (cond?.field && !fieldIds.has(cond.field)) {
-          issues.push({
-            code: 'DEAD_RULE',
-            severity: 'warning',
-            elementId: (el as { id?: string }).id,
-            message: `Rule references field "${cond.field}" which does not exist in this document.`,
-          });
-        }
+    for (const rule of el.rules ?? []) {
+      const field = rule.when.field;
+      if (!fieldIds.has(field)) {
+        issues.push({
+          code: 'DEAD_RULE',
+          severity: 'warning',
+          elementId: el.id,
+          message: `Rule references field "${field}" which does not exist in this document.`,
+        });
       }
     }
-    if (el.type === 'container' && Array.isArray(el.children)) {
-      checkRules(el.children as readonly Element[], fieldIds, issues);
-    }
+    if (el.type === 'container') checkRules(el.children, fieldIds, issues);
   }
 }
 

@@ -10,9 +10,9 @@ import { renderDocument, createDefaultHtmlRegistry } from '@renderly/html';
 // Use the default registry (all built-in node types)
 const result = renderDocument(irNodes);
 
-// Use a custom registry
+// Override one built-in renderer — the key must be an existing IRNodeType
 const registry = createDefaultHtmlRegistry();
-registry.set('divider', myDividerRenderer);
+registry.set('heading', myCustomHeadingRenderer);
 const result = renderDocument(irNodes, registry);
 
 if (!result.ok) {
@@ -21,6 +21,36 @@ if (!result.ok) {
   res.send(`<html><body>${result.value}</body></html>`);
 }
 ```
+
+`registry` is typed `Map<IRNodeType, HtmlNodeRenderer>` — you can only `set()` a key that's already a member of `IRNodeType` (`container`, `heading`, `text`, `input-text`, …, `custom`). This lets you *override* how a built-in node type renders, but it cannot add a brand-new node type: `registry.set('divider', ...)` fails to compile, because `'divider'` isn't part of `IRNodeType`. Adding a genuinely new field type without forking `@renderly/schema` is what the `custom` node exists for — see [Rendering Custom Field Types](#rendering-custom-field-types) below.
+
+## Rendering Custom Field Types
+
+`Element`/`IRNode` are closed unions — adding a real member (like the `divider` walked through in `@renderly/core`'s README) means editing `@renderly/schema`, which means forking or contributing upstream. If you just need one more field type in your own app without forking, use `custom` instead: `CustomElement` carries a free-form `kind: string` and `props: Record<string, unknown>` that Renderly never inspects, and the walker passes it through as an `IRCustomNode` unchanged.
+
+Every adapter registers a default `'custom'` renderer (`renderCustom`) that emits a generic placeholder (so an unhandled `kind` still renders instead of erroring). To render specific `kind`s yourself, override that one registry entry with a renderer that dispatches on `node.kind`, falling back to `renderCustom` for anything you don't handle:
+
+```typescript
+import type { IRCustomNode, IRNode } from '@renderly/schema';
+import { createDefaultHtmlRegistry, renderCustom, renderDocument } from '@renderly/html';
+import type { HtmlNodeRenderer, RenderChildrenFn } from '@renderly/html';
+import { ok } from '@renderly/shared';
+
+const renderMyCustomFields: HtmlNodeRenderer = (node: IRNode, renderChildren: RenderChildrenFn) => {
+  const custom = node as IRCustomNode; // safe: this renderer is only ever registered under the 'custom' key
+  if (custom.kind === 'star-rating') {
+    const rating = typeof custom.props['rating'] === 'number' ? custom.props['rating'] : 0;
+    return ok(`<div class="star-rating">${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}</div>`);
+  }
+  return renderCustom(custom, renderChildren); // fall back to the built-in placeholder for any other kind
+};
+
+const registry = createDefaultHtmlRegistry();
+registry.set('custom', renderMyCustomFields);
+const result = renderDocument(irNodes, registry);
+```
+
+Two things this mechanism does *not* give you: compile-time checking of `props`' shape per `kind` (it's `Record<string, unknown>` — validate it yourself), and per-`kind` type safety across the registry (every adapter still has exactly one `'custom'` slot, so your renderer is responsible for its own `kind` dispatch, same as the built-in one is).
 
 ## Responsive Layout
 

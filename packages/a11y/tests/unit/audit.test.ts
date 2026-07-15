@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { auditNodes } from '../../src/audit.js';
-import type { IRNode, IRHeadingNode, IRInputChoiceNode, IRSubmitNode, IRInputTextNode, IRContainerNode } from '@renderly/schema';
+import type { IRNode, IRHeadingNode, IRInputChoiceNode, IRSubmitNode, IRInputTextNode, IRContainerNode, IRTextNode, IRFormErrorNode, IRFieldErrorNode } from '@renderly/schema';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -19,6 +19,18 @@ function choiceInput(id: string, optionCount = 2): IRInputChoiceNode {
 
 function submit(id: string, label = 'Submit'): IRSubmitNode {
   return { type: 'submit', id, label, route: '/api', context: {}, children: [] };
+}
+
+function text(content = 'Some text'): IRTextNode {
+  return { type: 'text', id: undefined, content, weight: 'normal', intent: 'default', children: [] };
+}
+
+function formError(message = 'Form is invalid'): IRFormErrorNode {
+  return { type: 'error-form', id: undefined, message, children: [] };
+}
+
+function fieldError(fieldId: string, message = 'Field is invalid'): IRFieldErrorNode {
+  return { type: 'error-field', id: undefined, fieldId, message, children: [] };
 }
 
 // ── EMPTY_FORM ────────────────────────────────────────────────────────────────
@@ -155,6 +167,15 @@ describe('auditNodes — MISSING_FIELD_LABEL', () => {
   it('reports MISSING_FIELD_LABEL for whitespace-only label', () => {
     const v = auditNodes([textInput('x', '   ')]).find((x) => x.code === 'MISSING_FIELD_LABEL');
     expect(v).toBeDefined();
+  });
+});
+
+// ── pass-through nodes ────────────────────────────────────────────────────────
+
+describe('auditNodes — pass-through nodes', () => {
+  it('produces no violations for text, error-form, and error-field nodes', () => {
+    const nodes: IRNode[] = [text(), formError(), fieldError('name')];
+    expect(auditNodes(nodes)).toHaveLength(0);
   });
 });
 

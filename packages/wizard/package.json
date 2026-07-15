@@ -2,7 +2,6 @@
   "name": "@renderly/wizard",
   "version": "0.1.0",
   "license": "MIT",
-  "private": true,
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -28,6 +27,7 @@
     "@renderly/input": "workspace:*"
   },
   "devDependencies": {
+    "@renderly/html": "workspace:*",
     "@vitest/coverage-v8": "^1.6.0",
     "tsup": "^8.0.2",
     "typescript": "^5.4.5",

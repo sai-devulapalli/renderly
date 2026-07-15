@@ -1,4 +1,4 @@
-import type { IRNodeType } from '@renderly/schema';
+import type { IRNodeType, RenderableIRNodeType } from '@renderly/schema';
 import type { PdfNodeRenderer, PdfRegistry } from './types.js';
 import {
   renderContainer, renderHeading, renderText,
@@ -18,23 +18,25 @@ export function createPdfRegistry(): Map<IRNodeType, PdfNodeRenderer> {
   return new Map();
 }
 
+const DEFAULT_PDF_RENDERERS = {
+  container:      (n, d, rc) => renderContainer(n as IRContainerNode, d as PdfDoc, rc as RenderChildrenFn),
+  heading:        (n, d, rc) => renderHeading(n as IRHeadingNode, d as PdfDoc, rc as RenderChildrenFn),
+  text:           (n, d, rc) => renderText(n as IRTextNode, d as PdfDoc, rc as RenderChildrenFn),
+  'input-text':   (n, d, rc) => renderInputText(n as IRInputTextNode, d as PdfDoc, rc as RenderChildrenFn),
+  'input-number': (n, d, rc) => renderInputNumber(n as IRInputNumberNode, d as PdfDoc, rc as RenderChildrenFn),
+  'input-date':   (n, d, rc) => renderInputDate(n as IRInputDateNode, d as PdfDoc, rc as RenderChildrenFn),
+  'input-choice': (n, d, rc) => renderInputChoice(n as IRInputChoiceNode, d as PdfDoc, rc as RenderChildrenFn),
+  submit:         (n, d, rc) => renderSubmit(n as IRSubmitNode, d as PdfDoc, rc as RenderChildrenFn),
+  'error-form':   (n, d, rc) => renderFormError(n as IRFormErrorNode, d as PdfDoc, rc as RenderChildrenFn),
+  'error-field':  (n, d, rc) => renderFieldError(n as IRFieldErrorNode, d as PdfDoc, rc as RenderChildrenFn),
+  repeat:         (n, d, rc) => renderRepeat(n as IRRepeatNode, d as PdfDoc, rc as RenderChildrenFn),
+  'input-file':   (n, d, rc) => renderInputFile(n as IRInputFileNode, d as PdfDoc, rc as RenderChildrenFn),
+  signature:      (n, d, rc) => renderSignature(n as IRSignatureNode, d as PdfDoc, rc as RenderChildrenFn),
+  custom:         (n, d, rc) => renderCustom(n as IRCustomNode, d as PdfDoc, rc as RenderChildrenFn),
+} satisfies Record<RenderableIRNodeType, PdfNodeRenderer>;
+
 export function createDefaultPdfRegistry(): Map<IRNodeType, PdfNodeRenderer> {
-  return new Map<IRNodeType, PdfNodeRenderer>([
-    ['container',    (n, d, rc) => renderContainer(n as IRContainerNode, d as PdfDoc, rc as RenderChildrenFn)],
-    ['heading',      (n, d, rc) => renderHeading(n as IRHeadingNode, d as PdfDoc, rc as RenderChildrenFn)],
-    ['text',         (n, d, rc) => renderText(n as IRTextNode, d as PdfDoc, rc as RenderChildrenFn)],
-    ['input-text',   (n, d, rc) => renderInputText(n as IRInputTextNode, d as PdfDoc, rc as RenderChildrenFn)],
-    ['input-number', (n, d, rc) => renderInputNumber(n as IRInputNumberNode, d as PdfDoc, rc as RenderChildrenFn)],
-    ['input-date',   (n, d, rc) => renderInputDate(n as IRInputDateNode, d as PdfDoc, rc as RenderChildrenFn)],
-    ['input-choice', (n, d, rc) => renderInputChoice(n as IRInputChoiceNode, d as PdfDoc, rc as RenderChildrenFn)],
-    ['submit',       (n, d, rc) => renderSubmit(n as IRSubmitNode, d as PdfDoc, rc as RenderChildrenFn)],
-    ['error-form',   (n, d, rc) => renderFormError(n as IRFormErrorNode, d as PdfDoc, rc as RenderChildrenFn)],
-    ['error-field',  (n, d, rc) => renderFieldError(n as IRFieldErrorNode, d as PdfDoc, rc as RenderChildrenFn)],
-    ['repeat',       (n, d, rc) => renderRepeat(n as IRRepeatNode, d as PdfDoc, rc as RenderChildrenFn)],
-    ['input-file',   (n, d, rc) => renderInputFile(n as IRInputFileNode, d as PdfDoc, rc as RenderChildrenFn)],
-    ['signature',    (n, d, rc) => renderSignature(n as IRSignatureNode, d as PdfDoc, rc as RenderChildrenFn)],
-    ['custom',       (n, d, rc) => renderCustom(n as IRCustomNode, d as PdfDoc, rc as RenderChildrenFn)],
-  ]);
+  return new Map(Object.entries(DEFAULT_PDF_RENDERERS) as [IRNodeType, PdfNodeRenderer][]);
 }
 
 export type { PdfRegistry, PdfNodeRenderer, RenderChildrenFn };

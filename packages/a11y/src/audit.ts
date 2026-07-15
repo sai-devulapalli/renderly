@@ -1,9 +1,4 @@
-import type {
-  IRNode,
-  IRHeadingNode,
-  IRInputChoiceNode,
-  IRSubmitNode,
-} from '@renderly/schema';
+import type { IRNode } from '@renderly/schema';
 import type { A11yViolation } from './types.js';
 
 interface AuditState {
@@ -34,19 +29,17 @@ function auditNode(node: IRNode, state: AuditState): void {
 
   switch (node.type) {
     case 'heading': {
-      const h = node as IRHeadingNode;
       const expectedMax = state.lastHeadingLevel + 1;
-      if (state.lastHeadingLevel > 0 && h.level > expectedMax) {
+      if (state.lastHeadingLevel > 0 && node.level > expectedMax) {
         push(state, {
           code: 'HEADING_SKIP',
           nodeType: 'heading',
-          id: h.id,
-          message: `Heading level skipped: h${state.lastHeadingLevel} → h${h.level} (expected at most h${expectedMax}).`,
+          id: node.id,
+          message: `Heading level skipped: h${state.lastHeadingLevel} → h${node.level} (expected at most h${expectedMax}).`,
           severity: 'warning',
         });
       }
-      state.lastHeadingLevel = h.level;
-      // Recurse into heading children (IRHeadingNode has children: readonly IRNode[])
+      state.lastHeadingLevel = node.level;
       for (const child of node.children) auditNode(child, state);
       break;
     }
@@ -57,13 +50,12 @@ function auditNode(node: IRNode, state: AuditState): void {
     }
 
     case 'input-choice': {
-      const c = node as IRInputChoiceNode;
-      if (c.options.length === 0) {
+      if (node.options.length === 0) {
         push(state, {
           code: 'EMPTY_CHOICE_OPTIONS',
           nodeType: 'input-choice',
-          id: c.id,
-          message: `Choice field "${c.id}" has no options — users cannot select a value.`,
+          id: node.id,
+          message: `Choice field "${node.id}" has no options — users cannot select a value.`,
           severity: 'error',
         });
       }
@@ -71,13 +63,12 @@ function auditNode(node: IRNode, state: AuditState): void {
     }
 
     case 'submit': {
-      const s = node as IRSubmitNode;
-      if (s.label.trim().length === 0) {
+      if (node.label.trim().length === 0) {
         push(state, {
           code: 'EMPTY_SUBMIT_LABEL',
           nodeType: 'submit',
-          id: s.id,
-          message: `Submit button "${s.id}" has an empty label — screen readers cannot announce its purpose.`,
+          id: node.id,
+          message: `Submit button "${node.id}" has an empty label — screen readers cannot announce its purpose.`,
           severity: 'error',
         });
       }
@@ -87,13 +78,12 @@ function auditNode(node: IRNode, state: AuditState): void {
     case 'input-text':
     case 'input-number':
     case 'input-date': {
-      const label = (node as { label: string }).label;
-      if (label.trim().length === 0) {
+      if (node.label.trim().length === 0) {
         push(state, {
           code: 'MISSING_FIELD_LABEL',
           nodeType: node.type,
-          id: (node as { id: string }).id,
-          message: `Input field "${(node as { id: string }).id}" has an empty label — screen readers cannot describe it.`,
+          id: node.id,
+          message: `Input field "${node.id}" has an empty label — screen readers cannot describe it.`,
           severity: 'error',
         });
       }

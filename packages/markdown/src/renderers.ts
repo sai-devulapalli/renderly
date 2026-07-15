@@ -14,7 +14,7 @@ import type {
   IRCustomNode,
   IRRepeatNode,
 } from '@renderly/schema';
-import { ok } from '@renderly/shared';
+import { ok, sanitizeUrl } from '@renderly/shared';
 import type { Result } from '@renderly/shared';
 import { escapeMd } from './escape.js';
 import type { MarkdownError } from './errors.js';
@@ -101,7 +101,7 @@ export function renderSubmit(
   node: IRSubmitNode,
   _renderChildren: RenderChildrenFn,
 ): Result<string, MarkdownError> {
-  return ok(`---\n\n→ **[${escapeMd(node.label)}](${escapeMd(node.route)})**\n\n`);
+  return ok(`---\n\n→ **[${escapeMd(node.label)}](${escapeMd(sanitizeUrl(node.route))})**\n\n`);
 }
 
 export function renderFormError(

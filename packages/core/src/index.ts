@@ -22,4 +22,4 @@ export {
 export type { WalkScope } from './types.js';
 export { evaluateExpr, formatComputedValue } from './expr.js';
 export type { WalkOptions } from './walker.js';
-export { walk, createDefaultRegistry } from './walker.js';
+export { walk, createDefaultRegistry, DEFAULT_MAX_DEPTH } from './walker.js';

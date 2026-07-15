@@ -1,4 +1,4 @@
-import type { Document, Element, SubmitElement, ChoiceInputElement } from '@renderly/schema';
+import type { Document, Element, SubmitElement } from '@renderly/schema';
 import type { FieldDescriptor } from './types.js';
 
 function walkElements(elements: readonly Element[]): FieldDescriptor[] {
@@ -12,9 +12,7 @@ function walkElements(elements: readonly Element[]): FieldDescriptor[] {
         kind: el.kind,
         label: el.label,
         required: el.required ?? false,
-        multiple: el.kind === 'choice'
-          ? ((el as ChoiceInputElement).multiple ?? false)
-          : false,
+        multiple: el.kind === 'choice' ? (el.multiple ?? false) : false,
       });
     }
   }

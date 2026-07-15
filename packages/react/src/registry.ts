@@ -1,4 +1,4 @@
-import type { IRNodeType } from '@renderly/schema';
+import type { IRNodeType, RenderableIRNodeType } from '@renderly/schema';
 import type {
   IRContainerNode, IRHeadingNode, IRTextNode,
   IRInputTextNode, IRInputNumberNode, IRInputDateNode, IRInputChoiceNode,
@@ -17,23 +17,25 @@ export function createReactRegistry(): Map<IRNodeType, ReactNodeRenderer> {
   return new Map();
 }
 
+const DEFAULT_REACT_RENDERERS = {
+  container:      (n, ctx) => renderContainer(n as IRContainerNode, ctx),
+  heading:        (n, ctx) => renderHeading(n as IRHeadingNode, ctx),
+  text:           (n, ctx) => renderText(n as IRTextNode, ctx),
+  'input-text':   (n, ctx) => renderInputText(n as IRInputTextNode, ctx),
+  'input-number': (n, ctx) => renderInputNumber(n as IRInputNumberNode, ctx),
+  'input-date':   (n, ctx) => renderInputDate(n as IRInputDateNode, ctx),
+  'input-choice': (n, ctx) => renderInputChoice(n as IRInputChoiceNode, ctx),
+  submit:         (n, ctx) => renderSubmit(n as IRSubmitNode, ctx),
+  'error-form':   (n, ctx) => renderFormError(n as IRFormErrorNode, ctx),
+  'error-field':  (n, ctx) => renderFieldError(n as IRFieldErrorNode, ctx),
+  repeat:         (n, ctx) => renderRepeat(n as IRRepeatNode, ctx),
+  'input-file':   (n, ctx) => renderInputFile(n as IRInputFileNode, ctx),
+  signature:      (n, ctx) => renderSignature(n as IRSignatureNode, ctx),
+  custom:         (n, ctx) => renderCustom(n as IRCustomNode, ctx),
+} satisfies Record<RenderableIRNodeType, ReactNodeRenderer>;
+
 export function createDefaultReactRegistry(): Map<IRNodeType, ReactNodeRenderer> {
-  return new Map<IRNodeType, ReactNodeRenderer>([
-    ['container',    (n, ctx) => renderContainer(n as IRContainerNode, ctx)],
-    ['heading',      (n, ctx) => renderHeading(n as IRHeadingNode, ctx)],
-    ['text',         (n, ctx) => renderText(n as IRTextNode, ctx)],
-    ['input-text',   (n, ctx) => renderInputText(n as IRInputTextNode, ctx)],
-    ['input-number', (n, ctx) => renderInputNumber(n as IRInputNumberNode, ctx)],
-    ['input-date',   (n, ctx) => renderInputDate(n as IRInputDateNode, ctx)],
-    ['input-choice', (n, ctx) => renderInputChoice(n as IRInputChoiceNode, ctx)],
-    ['submit',       (n, ctx) => renderSubmit(n as IRSubmitNode, ctx)],
-    ['error-form',   (n, ctx) => renderFormError(n as IRFormErrorNode, ctx)],
-    ['error-field',  (n, ctx) => renderFieldError(n as IRFieldErrorNode, ctx)],
-    ['repeat',       (n, ctx) => renderRepeat(n as IRRepeatNode, ctx)],
-    ['input-file',   (n, ctx) => renderInputFile(n as IRInputFileNode, ctx)],
-    ['signature',    (n, ctx) => renderSignature(n as IRSignatureNode, ctx)],
-    ['custom',       (n, ctx) => renderCustom(n as IRCustomNode, ctx)],
-  ]);
+  return new Map(Object.entries(DEFAULT_REACT_RENDERERS) as [IRNodeType, ReactNodeRenderer][]);
 }
 
 export type { ReactRegistry, ReactNodeRenderer };

@@ -16,7 +16,7 @@ import type {
   ColorIntent,
   FontWeight,
 } from '@renderly/schema';
-import { ok } from '@renderly/shared';
+import { ok, sanitizeUrl } from '@renderly/shared';
 import type { Result } from '@renderly/shared';
 import { escapeHtml } from './escape.js';
 import type { EmailError } from './errors.js';
@@ -182,7 +182,7 @@ export function renderSubmit(
     + `mso-padding-alt:0;text-align:center;`;
   return ok(
     `<div style="margin-top:20px;text-align:left;">` +
-    `<a href="${escapeHtml(node.route)}" id="${escapeHtml(node.id)}" ` +
+    `<a href="${escapeHtml(sanitizeUrl(node.route))}" id="${escapeHtml(node.id)}" ` +
     `style="${btnStyle}">${escapeHtml(node.label)}</a>` +
     `</div>`,
   );

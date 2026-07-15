@@ -1,4 +1,4 @@
-import type { Element } from '@renderly/schema';
+import type { Element, InputElement } from '@renderly/schema';
 import { err, ok } from '@renderly/shared';
 import type { ElementHandler, WalkError } from './types.js';
 
@@ -6,6 +6,10 @@ export interface Registry {
   register(key: string, handler: ElementHandler): void;
   resolve(element: Element): import('@renderly/shared').Result<ElementHandler, WalkError>;
 }
+
+type ElementDispatchKey<E extends Element> = E extends InputElement ? `input:${E['kind']}` : E['type'];
+/** Every dispatch key `elementKey()` can produce — used to keep ALL_HANDLERS exhaustive at compile time. */
+export type ElementRegistryKey = ElementDispatchKey<Element>;
 
 export function elementKey(element: Element): string {
   if (element.type === 'input') return `input:${element.kind}`;

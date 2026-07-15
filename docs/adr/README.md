@@ -9,6 +9,7 @@ Decisions that are non-obvious, have lasting consequences, or were made after co
 | [0003](./0003-example-package-is-integration-layer.md) | @renderly/example is a private integration-test package — it must never be published | Accepted | example |
 | [0004](./0004-submit-has-no-adapter-dependencies.md) | @renderly/submit has no output adapter dependencies — it is a pure domain module | Accepted | submit, html, react |
 | [0005](./0005-ajv-module-level-compile.md) | Ajv schema is compiled once at module load — validate.errors must be snapshotted before returning | Accepted | input |
+| [0006](./0006-web-components-depends-on-html-adapter.md) | @renderly/web-components depends on @renderly/html — it is a DOM composition layer, not a peer rendering adapter | Accepted | web-components, html |
 
 ## How to add an ADR
 

@@ -10,6 +10,10 @@ import {
   isNumberInput,
   isDateInput,
   isChoiceInput,
+  isFileInput,
+  isRepeatElement,
+  isSignatureElement,
+  isCustomElement,
   inputKindOf,
 } from '../../src/elements.js';
 
@@ -26,7 +30,11 @@ const choiceInput: Element = {
   label: 'Gender',
   options: [{ value: 'M', label: 'Male' }, { value: 'F', label: 'Female' }],
 };
+const fileInput: Element = { type: 'input', kind: 'file', id: 'f5', label: 'Attachment' };
 const submit: Element = { type: 'submit', id: 's1', label: 'Submit', route: '/api/submit' };
+const repeat: Element = { type: 'repeat', id: 'r1', label: 'Items', template: [] };
+const signature: Element = { type: 'signature', id: 'sig1', label: 'Sign here' };
+const custom: Element = { type: 'custom', kind: 'rating', id: 'cu1' };
 
 describe('isContainerElement', () => {
   it('returns true for container', () => expect(isContainerElement(container)).toBe(true));
@@ -76,13 +84,34 @@ describe('isChoiceInput', () => {
   it('returns false for text input', () => expect(isChoiceInput(textInput as InputElement)).toBe(false));
 });
 
+describe('isFileInput', () => {
+  it('returns true for file input', () => expect(isFileInput(fileInput as InputElement)).toBe(true));
+  it('returns false for text input', () => expect(isFileInput(textInput as InputElement)).toBe(false));
+});
+
 describe('inputKindOf', () => {
   it('returns kind for each input type', () => {
     expect(inputKindOf(textInput as InputElement)).toBe('text');
     expect(inputKindOf(numberInput as InputElement)).toBe('number');
     expect(inputKindOf(dateInput as InputElement)).toBe('date');
     expect(inputKindOf(choiceInput as InputElement)).toBe('choice');
+    expect(inputKindOf(fileInput as InputElement)).toBe('file');
   });
+});
+
+describe('isRepeatElement', () => {
+  it('returns true for repeat', () => expect(isRepeatElement(repeat)).toBe(true));
+  it('returns false for non-repeat', () => expect(isRepeatElement(container)).toBe(false));
+});
+
+describe('isSignatureElement', () => {
+  it('returns true for signature', () => expect(isSignatureElement(signature)).toBe(true));
+  it('returns false for non-signature', () => expect(isSignatureElement(container)).toBe(false));
+});
+
+describe('isCustomElement', () => {
+  it('returns true for custom', () => expect(isCustomElement(custom)).toBe(true));
+  it('returns false for non-custom', () => expect(isCustomElement(container)).toBe(false));
 });
 
 describe('ContainerElement — optional props', () => {

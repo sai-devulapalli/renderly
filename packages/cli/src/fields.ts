@@ -14,11 +14,11 @@ function collectFields(elements: readonly Element[], out: FieldInfo[]): void {
         id: el.id,
         kind: el.kind,
         label: el.label,
-        required: (el as { required?: boolean }).required ?? false,
+        required: el.required ?? false,
       });
     }
-    if (el.type === 'container' && Array.isArray(el.children)) {
-      collectFields(el.children as readonly Element[], out);
+    if (el.type === 'container') {
+      collectFields(el.children, out);
     }
   }
 }

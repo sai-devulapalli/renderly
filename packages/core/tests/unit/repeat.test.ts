@@ -77,6 +77,11 @@ describe('deriveItemCount', () => {
     const values: FieldValues = { 'other[5].name': 'x' };
     expect(deriveItemCount('members', values, 1)).toBe(1);
   });
+
+  it('ignores a key with an unclosed bracket', () => {
+    const values: FieldValues = { 'members[0.name': 'x' };
+    expect(deriveItemCount('members', values, 1)).toBe(1);
+  });
 });
 
 // ── repeatHandler ─────────────────────────────────────────────────────────────
@@ -170,6 +175,13 @@ describe('repeatHandler', () => {
     if (!result.ok) return;
     const node = result.value as { errors: readonly string[] };
     expect(node.errors).toContain('Too few members');
+  });
+
+  it('extracts item-scoped errors matching the repeat item prefix', () => {
+    const el = makeRepeatEl({ minItems: 1 });
+    const errors: FormErrors = { fields: { 'members[0].name': ['Required'] } };
+    const result = repeatHandler(el, makeContext(undefined, errors));
+    expect(result.ok).toBe(true);
   });
 
   it('propagates walkChildren failure', () => {

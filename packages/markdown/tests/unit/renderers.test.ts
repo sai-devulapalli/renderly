@@ -139,6 +139,17 @@ describe('renderSubmit', () => {
     expect(r.value).toContain('→ **[Submit](/api)**');
     expect(r.value).toContain('---');
   });
+
+  it('rejects a javascript: route, falling back to a safe link destination', () => {
+    const node: IRSubmitNode = {
+      type: 'submit', id: 's', label: 'Submit',
+      route: 'javascript:alert(document.cookie)', context: {}, children: [],
+    };
+    const r = renderSubmit(node, noChildren);
+    if (!isOk(r)) return;
+    expect(r.value).not.toContain('javascript:');
+    expect(r.value).toContain('[Submit](\\#)');
+  });
 });
 
 // ── renderFormError ───────────────────────────────────────────────────────────

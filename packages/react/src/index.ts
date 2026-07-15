@@ -12,6 +12,10 @@ export {
   renderSubmit,
   renderFormError,
   renderFieldError,
+  renderRepeat,
+  renderInputFile,
+  renderSignature,
+  renderCustom,
 } from './renderers.js';
 export { createReactRegistry, createDefaultReactRegistry } from './registry.js';
 export { renderNodes } from './render.js';
