@@ -4,6 +4,7 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
+    pool: 'forks',
     include: ['tests/**/*.test.ts'],
     coverage: {
       provider: 'v8',
