@@ -111,6 +111,15 @@ importers:
         specifier: workspace:*
         version: link:../schema
     devDependencies:
+      '@renderly/core':
+        specifier: workspace:*
+        version: link:../core
+      '@renderly/input':
+        specifier: workspace:*
+        version: link:../input
+      '@renderly/submit':
+        specifier: workspace:*
+        version: link:../submit
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.1(vitest@1.6.1(@types/node@26.0.0)(happy-dom@14.12.3)(jsdom@24.1.3))
@@ -565,6 +574,9 @@ importers:
         specifier: workspace:*
         version: link:../shared
     devDependencies:
+      '@renderly/html':
+        specifier: workspace:*
+        version: link:../html
       '@vitest/coverage-v8':
         specifier: ^1.6.0
         version: 1.6.1(vitest@1.6.1(@types/node@26.0.0)(happy-dom@14.12.3)(jsdom@24.1.3))
