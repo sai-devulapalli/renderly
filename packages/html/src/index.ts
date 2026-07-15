@@ -13,6 +13,10 @@ export {
   renderSubmit,
   renderFormError,
   renderFieldError,
+  renderRepeat,
+  renderInputFile,
+  renderSignature,
+  renderCustom,
 } from './renderers.js';
 export { createHtmlRegistry, createDefaultHtmlRegistry } from './registry.js';
 export { renderNodes } from './render.js';

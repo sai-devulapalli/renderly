@@ -6,6 +6,7 @@ export {
   renderContainer, renderHeading, renderText,
   renderInputText, renderInputNumber, renderInputDate, renderInputChoice,
   renderSubmit, renderFormError, renderFieldError,
+  renderRepeat, renderInputFile, renderSignature, renderCustom,
 } from './renderers.js';
 export { createMarkdownRegistry, createDefaultMarkdownRegistry } from './registry.js';
 export { renderNodes } from './render.js';
