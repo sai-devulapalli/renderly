@@ -28,19 +28,13 @@ if (!result.ok) {
 
 `Element`/`IRNode` are closed unions — adding a real member (like the `divider` walked through in `@renderly/core`'s README) means editing `@renderly/schema`, which means forking or contributing upstream. If you just need one more field type in your own app without forking, use `custom` instead: `CustomElement` carries a free-form `kind: string` and `props: Record<string, unknown>` that Renderly never inspects, and the walker passes it through as an `IRCustomNode` unchanged.
 
-Every adapter registers a default `'custom'` renderer that emits a generic placeholder (so an unhandled `kind` still renders instead of erroring). To render specific `kind`s yourself, override that one registry entry with a renderer that dispatches on `node.kind`:
+Every adapter registers a default `'custom'` renderer (`renderCustom`) that emits a generic placeholder (so an unhandled `kind` still renders instead of erroring). To render specific `kind`s yourself, override that one registry entry with a renderer that dispatches on `node.kind`, falling back to `renderCustom` for anything you don't handle:
 
 ```typescript
 import type { IRCustomNode, IRNode } from '@renderly/schema';
-import { createDefaultHtmlRegistry, escapeHtml, renderDocument } from '@renderly/html';
+import { createDefaultHtmlRegistry, renderCustom, renderDocument } from '@renderly/html';
 import type { HtmlNodeRenderer, RenderChildrenFn } from '@renderly/html';
-import type { Result } from '@renderly/shared';
 import { ok } from '@renderly/shared';
-
-function renderPlaceholder(node: IRCustomNode): Result<string, never> {
-  const label = node.label !== undefined ? escapeHtml(node.label) : '';
-  return ok(`<div class="renderly-custom" data-kind="${escapeHtml(node.kind)}">${label}</div>`);
-}
 
 const renderMyCustomFields: HtmlNodeRenderer = (node: IRNode, renderChildren: RenderChildrenFn) => {
   const custom = node as IRCustomNode; // safe: this renderer is only ever registered under the 'custom' key
@@ -48,7 +42,7 @@ const renderMyCustomFields: HtmlNodeRenderer = (node: IRNode, renderChildren: Re
     const rating = typeof custom.props['rating'] === 'number' ? custom.props['rating'] : 0;
     return ok(`<div class="star-rating">${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}</div>`);
   }
-  return renderPlaceholder(custom); // fall back to a generic placeholder for any other kind
+  return renderCustom(custom, renderChildren); // fall back to the built-in placeholder for any other kind
 };
 
 const registry = createDefaultHtmlRegistry();
